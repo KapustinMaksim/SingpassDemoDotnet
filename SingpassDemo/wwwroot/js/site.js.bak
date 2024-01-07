@@ -1,0 +1,92 @@
+﻿var authApiUrl;
+var clientId;
+var redirectUrl;
+var purpose_id;
+var scope;
+var method = "S256"
+var securityEnable;
+var clientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+
+window.onload = function (e) {	
+	$.ajax({
+		url: "/getEnv",
+		data: {},
+		type: "GET",
+		success: function (result) {			
+			clientId = result.clientId;
+			redirectUrl = result.redirectUrl;
+			scope = result.scope;
+			purpose_id = result.purpose_id;
+			environment = result.environment;
+			authApiUrl = result.authApiUrl;
+		},
+		error: function (result) {
+			alert("ERROR:" + JSON.stringify(result.responseJSON.error));
+		}
+	});
+}
+
+$(function () {
+	$("#formAuthorize").submit(function (event) {
+		event.preventDefault();
+		callAuthorizeApi();
+	});
+	$("#formApplication").submit(function (event) {
+		event.preventDefault();	
+	$('#complete').toggleClass('hidden');
+		});
+	});
+
+	function callAuthorizeApi() {
+		$.ajax({
+			url: "/generateCodeChallenge",
+			data: {},
+			type: "POST",
+			success: function (result) {
+				//Redirect to authorize url after generating code challenge
+				var authorizeUrl = authApiUrl + "?client_id=" + clientId +
+					"&scope=" + scope +
+					"&purpose_id=" + purpose_id +
+					"&code_challenge=" + result +
+					"&code_challenge_method=" + method +
+					"&redirect_uri=" + redirectUrl;
+
+				window.location = authorizeUrl;
+			},
+			error: function (result) {
+				alert("ERROR:" + JSON.stringify(result.responseJSON.error));
+			}
+		});
+	}
+	
+	if (this.location.href.indexOf("callback=true") > -1) {	
+		callServerAPIs();
+	} else if (this.location.href.indexOf("callback") > -1) {	
+		alert("ERROR:" + JSON.stringify("Missing Auth Code"));
+	}
+
+	function callServerAPIs() {
+		var authCode = $.url(this.location.href).param('code');
+
+		var url = `/getPersonData?authCode=` + authCode
+	
+		$.ajax(
+			{
+			url: url,
+			contentType: 'application/json',
+			data: {
+				authCode: authCode,			
+			},
+			type: "GET",
+				success: function (result) {				
+					fillForm(result);
+				},
+			error: function (result) {
+				alert("ERROR:" + JSON.stringify(result.responseJSON.error));
+				}
+			});
+	}
+	
+	function fillForm(data) {
+	}
+});

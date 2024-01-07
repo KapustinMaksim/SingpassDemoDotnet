@@ -1,0 +1,8 @@
+﻿namespace SingpassDemo.Models.Crypto
+{
+	public class EphemeralKeyPair
+	{
+		public string PublicKey { get; set; }
+		public string PrivateKey { get; set; }
+	}
+}

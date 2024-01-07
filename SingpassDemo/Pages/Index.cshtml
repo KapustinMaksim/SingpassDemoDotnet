@@ -1,0 +1,24 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Singpass Demo";
+}
+<div class="myinfo">
+    <section class="hero-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 d-flex align-items-center full-screen-height">
+                    <div class="hero-content-div">
+                        <div class="hero-content">
+                            <h1>MyInfo Demo Application</h1>
+                        </div>
+                        <form id="formAuthorize">
+                            <a href="#" onclick="$(this).closest('form').submit()" class="btn2">Retrieve MyInfo</a>
+                        </form>
+                        <textarea id="personJsonArea"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
