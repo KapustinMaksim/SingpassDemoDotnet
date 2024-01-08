@@ -4,3 +4,7 @@
 
 **/bin/
 /SingpassDemo/obj/
+/SingpassDemo/obj
+/SingpassDemo/obj/SingpassDemo.csproj.nuget.dgspec.json
+/SingpassDemo/obj/project.assets.json
+/SingpassDemo/obj/project.nuget.cache

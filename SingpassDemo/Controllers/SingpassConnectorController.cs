@@ -81,7 +81,6 @@ namespace SingpassDemo.Controllers
 				WriteIndented = true
 			});
 
-
 			return Ok(formattedJson);
 		}
 	}

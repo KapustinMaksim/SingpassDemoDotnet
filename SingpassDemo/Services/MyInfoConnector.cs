@@ -2,9 +2,9 @@
 using SingpassDemo.Models.MyInfo;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
-using SingpassDemo.Enums;
 using SingpassDemo.Models.Crypto;
 using SingpassDemo.Services;
+using Jose;
 
 public class MyInfoConnector
 {
@@ -49,8 +49,7 @@ public class MyInfoConnector
 	    string codeVerifier,
 	    EphemeralKeyPair sessionEphemeralKeyPair)
     {
-	    var jktThumbprint = _securityHelper.GenerateJwkThumbprint(sessionEphemeralKeyPair.PublicKey);
-	    var clientAssertion = _securityHelper.GenerateClientAssertion(_config.GetTokenUrl, _config.ClientId, privateSigningKey, jktThumbprint);
+	    var clientAssertion = _securityHelper.GenerateClientAssertion(_config.GetTokenUrl, _config.ClientId, privateSigningKey, sessionEphemeralKeyPair);
 
         var @params = new Dictionary<string, string>
         {
@@ -82,8 +81,9 @@ public class MyInfoConnector
 		EphemeralKeyPair sessionEphemeralKeyPair, 
 		string privateEncryptionKey)
 	{
-
-		var decodedToken = JsonConvert.DeserializeObject<MyInfoTokenModel>(_securityHelper.DecodeJws(accessToken, JwkKeyType.sig));
+		var appJwks = GetAppJwks();
+		var decodedJws = _securityHelper.DecodeJws(accessToken, appJwks);
+		var decodedToken = JsonConvert.DeserializeObject<MyInfoTokenModel>(decodedJws);
 
 		if (decodedToken == null)
 	    {
@@ -105,7 +105,8 @@ public class MyInfoConnector
 	    }
 
 	    var jws = _securityHelper.DecryptJweWithKey(personResult, privateEncryptionKey);
-	    var decodedData = _securityHelper.DecodeJws(jws, JwkKeyType.sig);
+		var myInfoJwks = await GetMyInfoJwks();
+		var decodedData = _securityHelper.DecodeJws(jws, myInfoJwks);
 
 	    return decodedData;
     }
@@ -134,4 +135,45 @@ public class MyInfoConnector
 		return personData;
 	}
 
+	private async Task<JwkSet> GetMyInfoJwks()
+	{
+		var jwksJson = await _myInfoHttpClient.GetJsonData(_config.MyInfoJwksUrl);
+		var keyStore = JwkSet.FromJson(jwksJson, new JsonMapper());
+		return keyStore;
+	}
+
+	/// <summary>
+	/// A copy of MyInfoJwks is used since there is no access to the Singpass portal
+	/// to add your own endpoint with Jwks to the whitelist
+	/// </summary>
+	private JwkSet GetAppJwks()
+	{
+		var jwks = new Dictionary<string, object>
+		{
+			{"keys", new []
+				{
+					new Dictionary<string, object>{
+						{"alg",  "ES256"},
+						{"use", "sig"},
+						{"kty", "EC"},
+						{"kid", "AFMnnKRWTaBYEhNfEB6iQ5ErC1yqGVyZchH8A7nl_yM"},
+						{"crv", "P-256"},
+						{"x", "L_GG9F-hIWXxUEWCB4Fco6zXJkbaU_aUMSbHVbwEwso"},
+						{"y", "lNPEj7SHn5IFsO76Xel13d3NDlql8JyToZFylm5V-kU"}
+					},
+					new Dictionary<string, object> {
+						{"alg",  "ECDH-ES+A256KW"},
+						{"use", "enc"},
+						{"kty", "EC"},
+						{"kid", "M-JXqh0gh1GGUUdzNue3IUDyUiagqjHathnscUk2nS8"},
+						{"crv", "P-256"},
+						{"x", "qrR8PAUO6fDouV-6mVdix5IyrVMtu0PVS0nOqWBZosA"},
+						{"y", "6xSbySYW6ke2V727TCgSOPiH4XSDgxFCUrAAMSbl9tI"}
+					}
+				}
+			}
+		};
+		var keyStore = JwkSet.FromDictionary(jwks);
+		return keyStore;
+	}
 }

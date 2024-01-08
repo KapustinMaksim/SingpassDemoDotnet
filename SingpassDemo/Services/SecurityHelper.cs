@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using Jose;
 using Newtonsoft.Json;
@@ -8,7 +7,6 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-using SingpassDemo.Enums;
 using SingpassDemo.Models.Crypto;
 using PemReader = Org.BouncyCastle.OpenSsl.PemReader;
 using PemWriter = Org.BouncyCastle.OpenSsl.PemWriter;
@@ -32,15 +30,10 @@ public class SecurityHelper
 		return randomString.ToString();
 	}
 
-	public string DecodeJws(string compactJws, JwkKeyType keyType)
+	public string DecodeJws(string compactJws, JwkSet keyStore)
 	{
-		var jwks = GetJwks();
-
-		var keyStore = JwkSet.FromDictionary(jwks);
-		var key = keyStore.Keys.First(k => k.Use == keyType.ToString());
-
-		var result = JWT.Decode(compactJws, key);
-
+		var sigKey = keyStore.Keys.First(k => k.Use == "sig" && k.Kty == "EC");
+		var result = JWT.Decode(compactJws, sigKey);
 		return result;
 	}
 
@@ -86,11 +79,17 @@ public class SecurityHelper
 		};
 	}
 
-	public string GenerateClientAssertion(string url, string clientId, string privateSigningKey, string jktThumbprint)
+	public string GenerateClientAssertion(
+		string url, 
+		string clientId, 
+		string privateSigningKey,
+		EphemeralKeyPair sessionEphemeralKeyPair)
 	{
 		try
 		{
 			var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+			var jktThumbprint = GenerateJwkThumbprint(sessionEphemeralKeyPair.PublicKey);
 
 			var payload = new
 			{
@@ -115,9 +114,10 @@ public class SecurityHelper
 				D = privateKeyParams.D.ToByteArrayUnsigned(),
 			});
 
+			var kidOfSigningKey = GenerateJwkThumbprint(privateSigningKey);
 			var jwtToken = JWT.Encode(payloadJson, ecdsa, JwsAlgorithm.ES256, extraHeaders: new Dictionary<string, object>
 			{
-				{ "kid", "aQPyZ72NM043E4KEioaHWzixt0owV99gC9kRK388WoQ" }, //todo
+				{ "kid", kidOfSigningKey },
 				{ "typ", "JWT" }
 			});
 
@@ -184,7 +184,7 @@ public class SecurityHelper
 		return sha256.ComputeHash(Encoding.UTF8.GetBytes(buffer));
 	}
 
-	public string GenerateJwkThumbprint(string jwkPem)
+	private string GenerateJwkThumbprint(string jwkPem)
 	{
 		var pubKey = new Chilkat.PublicKey();
 		pubKey.LoadFromString(jwkPem);
@@ -218,37 +218,5 @@ public class SecurityHelper
 		}
 
 		throw new InvalidOperationException("Invalid JWK PEM format or unsupported key type.");
-	}
-
-	private static IDictionary<string, object> GetJwks()
-	{
-		//todo this keys hardcoded for demo purposes
-		var result = new Dictionary<string, object>
-		{
-			{"keys", new []
-				{
-					new Dictionary<string, object>{
-						{"alg",  "ES256"},
-						{"use", "sig"},
-						{"kty", "EC"},
-						{"kid", "AFMnnKRWTaBYEhNfEB6iQ5ErC1yqGVyZchH8A7nl_yM"},
-						{"crv", "P-256"},
-						{"x", "L_GG9F-hIWXxUEWCB4Fco6zXJkbaU_aUMSbHVbwEwso"},
-						{"y", "lNPEj7SHn5IFsO76Xel13d3NDlql8JyToZFylm5V-kU"}
-					},
-					new Dictionary<string, object> {
-						{"alg",  "ECDH-ES+A256KW"},
-						{"use", "enc"},
-						{"kty", "EC"},
-						{"kid", "M-JXqh0gh1GGUUdzNue3IUDyUiagqjHathnscUk2nS8"},
-						{"crv", "P-256"},
-						{"x", "qrR8PAUO6fDouV-6mVdix5IyrVMtu0PVS0nOqWBZosA"},
-						{"y", "6xSbySYW6ke2V727TCgSOPiH4XSDgxFCUrAAMSbl9tI"}
-					}
-				}
-			}
-		};
-
-		return result;
 	}
 }

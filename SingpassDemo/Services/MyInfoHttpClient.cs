@@ -6,7 +6,20 @@ public class MyInfoHttpClient
 {
     private static readonly HttpClient client = new();
 
-    public async Task<TRes> PostRequestAsync<TRes>(string url, NameValueCollection headers, Dictionary<string, string> body)
+    public async Task<string> GetJsonData(string apiUrl)
+    {
+	    using var httpClient = new HttpClient();
+	    var response = await httpClient.GetAsync(apiUrl);
+	    var jsonResponse = await response.Content.ReadAsStringAsync();
+
+	    if (!response.IsSuccessStatusCode)
+	    {
+		    throw new Exception(jsonResponse);
+	    }
+	    return jsonResponse;
+    }
+
+	public async Task<TRes> PostRequestAsync<TRes>(string url, NameValueCollection headers, Dictionary<string, string> body)
     {
 		var bodyStringify = ToQueryString(body);
 

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Gzmk3+gKNDOvdz1/oFCADwgRlYs/ZdrScwV5yuf1N9GlYlF009ltSCdz3nxO+bvvGhXUyy/il1j+OsXYoOMjWA==",
+  "dgSpecHash": "WbW18pGKhwerNSnGtbi7R5NpVi7M9gW/nn/FjtN3KWMOrXNKFZwFcj5u2wSuvcr6aKxwOVeVm4oiMm+DQgWotA==",
   "success": true,
-  "projectFilePath": "C:\\Temp\\SingpassDemo\\SingpassDemo\\SingpassDemo.csproj",
+  "projectFilePath": "C:\\codeIr\\SingpassDemoDotnet\\SingpassDemo\\SingpassDemo.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MaxKa\\.nuget\\packages\\bouncycastle.cryptography\\2.2.1\\bouncycastle.cryptography.2.2.1.nupkg.sha512",
     "C:\\Users\\MaxKa\\.nuget\\packages\\chilkatdncore\\9.50.96\\chilkatdncore.9.50.96.nupkg.sha512",

@@ -2438,11 +2438,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Temp\\SingpassDemo\\SingpassDemo\\SingpassDemo.csproj",
+      "projectUniqueName": "C:\\codeIr\\SingpassDemoDotnet\\SingpassDemo\\SingpassDemo.csproj",
       "projectName": "SingpassDemo",
-      "projectPath": "C:\\Temp\\SingpassDemo\\SingpassDemo\\SingpassDemo.csproj",
+      "projectPath": "C:\\codeIr\\SingpassDemoDotnet\\SingpassDemo\\SingpassDemo.csproj",
       "packagesPath": "C:\\Users\\MaxKa\\.nuget\\packages\\",
-      "outputPath": "C:\\Temp\\SingpassDemo\\SingpassDemo\\obj\\",
+      "outputPath": "C:\\codeIr\\SingpassDemoDotnet\\SingpassDemo\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\MaxKa\\AppData\\Roaming\\NuGet\\NuGet.Config",
