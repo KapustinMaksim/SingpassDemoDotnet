@@ -1,6 +1,7 @@
 ﻿using SingpassDemo.Models;
 using SingpassDemo.Models.MyInfo;
 using System.Collections.Specialized;
+using Newtonsoft.Json;
 using SingpassDemo.Enums;
 using SingpassDemo.Models.Crypto;
 using SingpassDemo.Services;
@@ -18,7 +19,7 @@ public class MyInfoConnector
 		_myInfoHttpClient = new MyInfoHttpClient();
 	}
 
-    public async Task<dynamic> GetMyInfoPersonData(
+    public async Task<string> GetMyInfoPersonData(
 	    string authCode, 
 	    string codeVerifier, 
 	    string privateSigningKey, 
@@ -76,14 +77,15 @@ public class MyInfoConnector
         return accessToken;
     }
 
-	private async Task<dynamic> GetPersonDataWithToken(
+	private async Task<string> GetPersonDataWithToken(
 		string accessToken, 
 		EphemeralKeyPair sessionEphemeralKeyPair, 
 		string privateEncryptionKey)
-    {
-	    var decodedToken = _securityHelper.DecodeJws<MyInfoTokenModel>(accessToken, JwkKeyType.sig);
+	{
 
-	    if (decodedToken == null)
+		var decodedToken = JsonConvert.DeserializeObject<MyInfoTokenModel>(_securityHelper.DecodeJws(accessToken, JwkKeyType.sig));
+
+		if (decodedToken == null)
 	    {
 		    throw new Exception("Invalid Token");
 	    }
@@ -103,7 +105,7 @@ public class MyInfoConnector
 	    }
 
 	    var jws = _securityHelper.DecryptJweWithKey(personResult, privateEncryptionKey);
-	    var decodedData = _securityHelper.DecodeJws<object>(jws, JwkKeyType.enc);
+	    var decodedData = _securityHelper.DecodeJws(jws, JwkKeyType.sig);
 
 	    return decodedData;
     }
@@ -115,11 +117,6 @@ public class MyInfoConnector
 	{
 		var urlLink = _config.GetPersonUrl + "/" + sub;
 		var strParams = "scope=" + Uri.EscapeDataString(_config.Scope);
-
-		if (!string.IsNullOrEmpty(_config.SubentityId))
-		{
-			strParams = $"{strParams}&subentity={_config.SubentityId}";
-		}
 
 		var headers = new NameValueCollection { { "Cache-Control", "no-cache" } };
 

@@ -3,8 +3,6 @@
 public class AppConfig
 {
 	public string ClientId { get; set; } = "STG2-MYINFO-SELF-TEST";
-	
-	public string SubentityId { get; set; }
 
 	public string PrivateSigningKeyPath { get; set; } =
 		"cert/app-signing-private-key.pem";

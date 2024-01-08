@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text;
 using Jose;
 using Newtonsoft.Json;
@@ -31,25 +32,16 @@ public class SecurityHelper
 		return randomString.ToString();
 	}
 
-	public TRes DecodeJws<TRes>(string compactJws, JwkKeyType keyType)
+	public string DecodeJws(string compactJws, JwkKeyType keyType)
 	{
 		var jwks = GetJwks();
 
-		try
-		{
-			var keyStore = JwkSet.FromDictionary(jwks);
-			var key = keyStore.Keys.First(k => k.Use == keyType.ToString());
+		var keyStore = JwkSet.FromDictionary(jwks);
+		var key = keyStore.Keys.First(k => k.Use == keyType.ToString());
 
-			var result = JWT.Decode(compactJws, key);
+		var result = JWT.Decode(compactJws, key);
 
-			var deserializeObject = JsonConvert.DeserializeObject<TRes>(result);
-			return deserializeObject;
-		}
-		catch (Exception error)
-		{
-			Console.Error.WriteLine("Error with verifying JWS: " + error.Message);
-			throw new Exception("ERROR_VERIFY_JWS");
-		}
+		return result;
 	}
 
 	public string DecryptJweWithKey(string compactJwe, string decryptionPrivateKey)
@@ -61,7 +53,7 @@ public class SecurityHelper
 			D = privateKeyParams.D.ToByteArrayUnsigned(),
 		});
 
-		var decryptedData = JWT.Decode(compactJwe, ecdsa, JwsAlgorithm.ES256);
+		var decryptedData = JWT.Decode(compactJwe, new Jwk(ecdsa));
 
 		return decryptedData;
 	}

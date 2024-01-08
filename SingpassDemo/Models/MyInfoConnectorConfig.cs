@@ -5,7 +5,6 @@ public class MyInfoConnectorConfig
     public MyInfoConnectorConfig(AppConfig appConfig)
     {
         ClientId = appConfig.ClientId;
-        SubentityId = appConfig.SubentityId;
         RedirectUrl = appConfig.AppCallbackUrl;
         Scope = appConfig.Scopes;
         AuthorizeJwksUrl = "https://test.authorise.singpass.gov.sg/.well-known/keys.json";
@@ -15,7 +14,6 @@ public class MyInfoConnectorConfig
     }
 
     public string ClientId { get; set; }
-    public string SubentityId { get; set; }
     public string RedirectUrl { get; set; }
     public string Scope { get; set; }
     public string AuthorizeJwksUrl { get; set; }

@@ -2,9 +2,4 @@
 **/.vs
 **/.vscode
 
-
-
-*.ncrunchsolution
-**/.cr/
-.idea
-*.csr
+/bin/

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using SingpassDemo.Models;
 
@@ -31,8 +32,7 @@ namespace SingpassDemo.Controllers
 				redirectUrl = _appConfig.AppCallbackUrl,
 				scope = _appConfig.Scopes,
 				purpose_id = _appConfig.PurposeId,
-				authApiUrl = _appConfig.ApiAuthorizeUrl,
-				subentity = _appConfig.SubentityId,
+				authApiUrl = _appConfig.ApiAuthorizeUrl
 			};
 			return Ok(configs);
 		}
@@ -67,14 +67,22 @@ namespace SingpassDemo.Controllers
 			var privateSigningKey = await System.IO.File.ReadAllTextAsync(_appConfig.PrivateSigningKeyPath);
 			var privateEncryptionKey = await System.IO.File.ReadAllTextAsync(_appConfig.PrivateEncryptionKeyPath);
 
-			var personData = await _myInfoConnector.GetMyInfoPersonData(
+			var personDataJson = await _myInfoConnector.GetMyInfoPersonData(
 				authCode,
 				codeVerifier,
 				privateSigningKey,
 				privateEncryptionKey
 			);
 
-			return Ok(personData);
+			var jsonDocument = JsonDocument.Parse(personDataJson);
+
+			var formattedJson = JsonSerializer.Serialize(jsonDocument.RootElement, new JsonSerializerOptions
+			{
+				WriteIndented = true
+			});
+
+
+			return Ok(formattedJson);
 		}
 	}
 }
